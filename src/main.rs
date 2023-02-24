@@ -25,7 +25,29 @@ fn find_images() -> Vec<String> {
     images
 }
 
+fn process_images(archive_images: Vec<String>) {
+    for archive_image in archive_images {
+        let mut archive_name = archive_image.clone();
+        let image_format = archive_name[archive_name.len() - 4..].to_string();
+        archive_name.truncate(archive_name.len() - 4);
+        let final_archive_name = format!("{archive_name}_gryscl{image_format}");
+
+        if std::path::Path::new(&final_archive_name).exists() || archive_name.contains("_gryscl") {
+            println!("file exists, skipping");
+            continue;
+        }
+        let grayscale_image = image::open(archive_image)
+            .expect("failed to convert image to grayscale")
+            .grayscale();
+        println!("new image name {final_archive_name}");
+        grayscale_image
+            .save(final_archive_name)
+            .expect("error saving new grayscale image");
+    }
+}
+
 fn main() {
     println!("Easy Image Grayscale");
-    let images = find_images();
+    let archive_images = find_images();
+    process_images(archive_images);
 }
