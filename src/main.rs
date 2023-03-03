@@ -1,6 +1,12 @@
 use std::path::PathBuf;
 use std::{env, fs};
 
+use eframe::egui;
+
+use crate::gui::interface::ImageGrayscale;
+
+mod gui;
+
 fn current_directory() -> PathBuf {
     env::current_dir().expect("error getting current directory")
 }
@@ -48,6 +54,15 @@ fn process_images(archive_images: Vec<String>) {
 
 fn main() {
     println!("Easy Image Grayscale");
-    let archive_images = find_images();
-    process_images(archive_images);
+
+    let options = eframe::NativeOptions {
+        initial_window_size: Some(egui::vec2(800.0, 600.0)),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "My egui App",
+        options,
+        Box::new(|cc| Box::new(ImageGrayscale::new(cc))),
+    )
+    .expect("unable to start window");
 }
