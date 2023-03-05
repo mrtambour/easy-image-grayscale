@@ -1,10 +1,12 @@
 use std::ops::RangeTo;
 
-use eframe::egui::{Align, Color32, Context, RichText, ScrollArea};
+use eframe::egui::{Align, Color32, Context, RichText, ScrollArea, Ui};
 use eframe::{egui, Frame};
 
 pub struct ImageGrayscale {
     image_list: Vec<RangeTo<i32>>,
+    file_options: Vec<String>,
+    keep_original_files: String,
 }
 
 impl ImageGrayscale {
@@ -17,12 +19,44 @@ impl Default for ImageGrayscale {
     fn default() -> Self {
         Self {
             image_list: vec![..100],
+            keep_original_files: "Keep Original Files".to_string(),
+            file_options: vec![
+                "Keep Original Files".to_string(),
+                "Remove Original Files".to_string(),
+            ],
         }
     }
 }
 
 impl eframe::App for ImageGrayscale {
     fn update(&mut self, ctx: &Context, frame: &mut Frame) {
+        egui::TopBottomPanel::top("top_panel")
+            .min_height(30.0)
+            .show(ctx, |ui| {
+                ui.with_layout(
+                    egui::Layout::right_to_left(egui::Align::Center).with_cross_justify(true),
+                    |ui| {
+                        if ui.add(egui::Button::new("Clear List")).clicked() {
+                            println!("{}", &self.keep_original_files);
+                        };
+                        egui::ComboBox::from_id_source("keep_file_option")
+                            .selected_text(self.keep_original_files.clone())
+                            .show_ui(ui, |ui| {
+                                ui.selectable_value(
+                                    &mut self.keep_original_files,
+                                    self.file_options.first().unwrap().to_string(),
+                                    self.file_options.first().unwrap().to_string(),
+                                );
+                                ui.selectable_value(
+                                    &mut self.keep_original_files,
+                                    self.file_options.get(1).unwrap().to_string(),
+                                    self.file_options.get(1).unwrap().to_string(),
+                                );
+                            });
+                    },
+                );
+            });
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ScrollArea::vertical()
                 .id_source("main_scroll")
