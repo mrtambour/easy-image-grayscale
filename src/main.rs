@@ -62,7 +62,7 @@ fn main() {
     eframe::run_native(
         "My egui App",
         options,
-        Box::new(|cc| Box::new(ImageGrayscale::new(cc))),
+        Box::new(|cc| Box::new(ImageGrayscale::default())),
     )
     .expect("unable to start window");
 }
