@@ -1,6 +1,7 @@
 use std::ops::RangeTo;
 
-use eframe::egui::{Align, Color32, Context, RichText, ScrollArea, Ui};
+use eframe::egui::WidgetText::RichText;
+use eframe::egui::{Align, Color32, Context, Direction, ScrollArea, Ui};
 use eframe::{egui, Frame};
 
 pub struct ImageGrayscale {
@@ -36,9 +37,6 @@ impl eframe::App for ImageGrayscale {
                 ui.with_layout(
                     egui::Layout::right_to_left(egui::Align::Center).with_cross_justify(true),
                     |ui| {
-                        if ui.add(egui::Button::new("Clear List")).clicked() {
-                            println!("{}", &self.keep_original_files);
-                        };
                         egui::ComboBox::from_id_source("keep_file_option")
                             .selected_text(self.keep_original_files.clone())
                             .show_ui(ui, |ui| {
@@ -86,5 +84,31 @@ impl eframe::App for ImageGrayscale {
                     }
                 });
         });
+        egui::TopBottomPanel::bottom("bottom_panel")
+            .min_height(30.0)
+            .show(ctx, |ui| {
+                ui.with_layout(
+                    egui::Layout::from_main_dir_and_cross_align(
+                        Direction::LeftToRight,
+                        Align::Center,
+                    )
+                    .with_main_align(Align::Max)
+                    .with_cross_justify(true),
+                    |ui| {
+                        if ui.add(egui::Button::new("Scan Folder")).clicked() {
+                            println!("{}", &self.keep_original_files);
+                        };
+                        if ui.add(egui::Button::new("Remove Selected")).clicked() {
+                            println!("{}", &self.keep_original_files);
+                        };
+                        if ui.add(egui::Button::new("Clear List")).clicked() {
+                            println!("{}", &self.keep_original_files);
+                        };
+                        if ui.add(egui::Button::new("Process Images")).clicked() {
+                            println!("{}", &self.keep_original_files);
+                        };
+                    },
+                );
+            });
     }
 }
