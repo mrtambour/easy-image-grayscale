@@ -73,14 +73,23 @@ impl eframe::App for ImageGrayscale {
                                 .striped(true)
                                 .spacing(egui::Vec2::new(10.0, 0.0))
                                 .show(ui, |ui| {
-                                    ui.add_sized(
-                                        [25.0, 30.0],
-                                        egui::Label::new(
-                                            egui::RichText::new(self.image_list.get(row).unwrap())
+                                    if ui
+                                        .add_sized(
+                                            [ui.available_width() / 1.5, 30.0],
+                                            egui::Button::new(
+                                                egui::RichText::new(
+                                                    self.image_list.get(row).unwrap(),
+                                                )
                                                 .color(egui::Color32::from_rgb(255, 255, 255))
                                                 .monospace(),
-                                        ),
-                                    )
+                                            ),
+                                        )
+                                        .clicked()
+                                    {
+                                        println!("clicked");
+                                    }
+
+                                    ui.end_row();
                                 });
                         });
                     }

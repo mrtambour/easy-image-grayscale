@@ -17,3 +17,7 @@ Cargo.lock
 # Custom
 .idea
 *.iml
+
+# Images
+*jpg
+*png
