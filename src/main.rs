@@ -1,10 +1,10 @@
-use crate::gui::ice_gui_test::ImageGrayscale;
-use eframe::egui;
-use iced::{Alignment, Element, Length, Sandbox, Settings};
 use std::path::PathBuf;
 use std::{env, fs};
 
-// use crate::gui::interface::ImageGrayscale;
+use eframe::egui;
+use iced::{Alignment, Element, Length, Sandbox, Settings};
+
+use crate::gui::interface::ImageGrayscale;
 
 mod gui;
 
@@ -56,16 +56,14 @@ fn process_images(archive_images: Vec<String>) {
 fn main() {
     println!("Easy Image Grayscale");
 
-    // let options = eframe::NativeOptions {
-    //     initial_window_size: Some(egui::vec2(800.0, 600.0)),
-    //     ..Default::default()
-    // };
-    // eframe::run_native(
-    //     "My egui App",
-    //     options,
-    //     Box::new(|cc| Box::new(ImageGrayscale::default())),
-    // )
-    // .expect("unable to start window");
-
-    ImageGrayscale::run(Settings::default()).unwrap();
+    let options = eframe::NativeOptions {
+        initial_window_size: Some(egui::vec2(800.0, 600.0)),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "My egui App",
+        options,
+        Box::new(|cc| Box::new(ImageGrayscale::default())),
+    )
+    .expect("unable to start window");
 }
