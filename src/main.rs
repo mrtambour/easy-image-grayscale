@@ -1,8 +1,4 @@
-use std::path::PathBuf;
-use std::{env, fs};
-
 use eframe::egui;
-use iced::{Alignment, Element, Length, Sandbox, Settings};
 
 use crate::gui::interface::ImageGrayscale;
 
@@ -17,9 +13,9 @@ fn main() {
         ..Default::default()
     };
     eframe::run_native(
-        "My egui App",
+        "Easy Image Grayscale",
         options,
         Box::new(|cc| Box::new(ImageGrayscale::default())),
     )
-    .expect("unable to start window");
+    .expect("unable to open window");
 }
