@@ -4,8 +4,10 @@ use eframe::egui::WidgetText::RichText;
 use eframe::egui::{Align, Color32, Context, Direction, ScrollArea, Ui};
 use eframe::{egui, Frame};
 
+use crate::processing::image_handling::find_images;
+
 pub struct ImageGrayscale {
-    image_list: Vec<RangeTo<i32>>,
+    image_list: Vec<String>,
     file_options: Vec<String>,
     keep_original_files: String,
 }
@@ -19,7 +21,7 @@ impl ImageGrayscale {
 impl Default for ImageGrayscale {
     fn default() -> Self {
         Self {
-            image_list: vec![..100],
+            image_list: vec!["Click Scan Folder".to_string()],
             keep_original_files: "Keep Original Files".to_string(),
             file_options: vec![
                 "Keep Original Files".to_string(),
@@ -62,10 +64,10 @@ impl eframe::App for ImageGrayscale {
                 .auto_shrink([false, true])
                 .min_scrolled_height(50.0)
                 .stick_to_right(true)
-                .show_rows(ui, 35.0, 100, |ui, row_range| {
-                    for row in row_range {
+                .show_rows(ui, 35.0, self.image_list.len(), |ui, range| {
+                    for row in range {
                         ui.push_id(row, |ui| {
-                            egui::Grid::new("Images")
+                            egui::Grid::new("grid")
                                 .striped(true)
                                 .num_columns(1)
                                 .striped(true)
@@ -74,7 +76,7 @@ impl eframe::App for ImageGrayscale {
                                     ui.add_sized(
                                         [25.0, 30.0],
                                         egui::Label::new(
-                                            egui::RichText::new(row.to_string())
+                                            egui::RichText::new(self.image_list.get(row).unwrap())
                                                 .color(egui::Color32::from_rgb(255, 255, 255))
                                                 .monospace(),
                                         ),
@@ -90,6 +92,8 @@ impl eframe::App for ImageGrayscale {
             .show(ctx, |ui| {
                 ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
                     if ui.add(egui::Button::new("Scan Folder")).clicked() {
+                        self.image_list.clear();
+                        self.image_list = find_images();
                         println!("{}", &self.keep_original_files);
                     };
                     if ui.add(egui::Button::new("Remove Selected")).clicked() {
