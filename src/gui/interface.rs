@@ -88,7 +88,6 @@ impl eframe::App for ImageGrayscale {
         egui::TopBottomPanel::bottom("bottom_panel")
             .min_height(40.0)
             .show(ctx, |ui| {
-                ui.add_space(5.0);
                 ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
                     if ui.add(egui::Button::new("Scan Folder")).clicked() {
                         println!("{}", &self.keep_original_files);
@@ -102,7 +101,6 @@ impl eframe::App for ImageGrayscale {
                     if ui.add(egui::Button::new("Process Images")).clicked() {
                         println!("{}", &self.keep_original_files);
                     };
-                    ui.add_space(5.0);
                 });
             });
     }
