@@ -1,8 +1,14 @@
+use std::fs;
 use std::ops::RangeTo;
 
 use eframe::egui::WidgetText::RichText;
 use eframe::egui::{Align, Color32, Context, Direction, ScrollArea, Ui};
+use eframe::epaint::TextureId;
 use eframe::{egui, Frame};
+use egui_extras::image::load_image_bytes;
+use egui_extras::RetainedImage;
+use iced::widget::image;
+use image::EncodableLayout;
 
 use crate::processing::image_handling::find_images;
 
@@ -10,6 +16,8 @@ pub struct ImageGrayscale {
     image_list: Vec<String>,
     file_options: Vec<String>,
     keep_original_files: String,
+    raw_images: Vec<Vec<u8>>,
+    retained_images: Vec<RetainedImage>,
 }
 
 impl ImageGrayscale {
@@ -21,12 +29,14 @@ impl ImageGrayscale {
 impl Default for ImageGrayscale {
     fn default() -> Self {
         Self {
-            image_list: vec!["Click Scan Folder".to_string()],
+            image_list: vec![],
             keep_original_files: "Keep Original Files".to_string(),
             file_options: vec![
                 "Keep Original Files".to_string(),
                 "Remove Original Files".to_string(),
             ],
+            raw_images: vec![],
+            retained_images: vec![],
         }
     }
 }
@@ -66,30 +76,24 @@ impl eframe::App for ImageGrayscale {
                 .stick_to_right(true)
                 .show_rows(ui, 35.0, self.image_list.len(), |ui, range| {
                     for row in range {
-                        ui.push_id(row, |ui| {
+                        let image_name = self.image_list.get(row).unwrap();
+                        println!("trying to get {}", image_name);
+                        println!("length of raw images {}", self.raw_images.len());
+
+                        let finale = ui.push_id(row, |ui| {
                             egui::Grid::new("grid")
                                 .striped(true)
-                                .num_columns(1)
+                                .num_columns(3)
                                 .striped(true)
                                 .spacing(egui::Vec2::new(10.0, 0.0))
                                 .show(ui, |ui| {
-                                    if ui
-                                        .add_sized(
-                                            [ui.available_width() / 1.5, 30.0],
-                                            egui::Button::new(
-                                                egui::RichText::new(
-                                                    self.image_list.get(row).unwrap(),
-                                                )
-                                                .color(egui::Color32::from_rgb(255, 255, 255))
-                                                .monospace(),
-                                            ),
+                                    ui.add(
+                                        egui::ImageButton::new(
+                                            self.retained_images.get(row).unwrap().texture_id(ctx),
+                                            self.retained_images.get(row).unwrap().size_vec2(),
                                         )
-                                        .clicked()
-                                    {
-                                        println!("clicked");
-                                    }
-
-                                    ui.end_row();
+                                        .selected(false),
+                                    )
                                 });
                         });
                     }
@@ -103,6 +107,21 @@ impl eframe::App for ImageGrayscale {
                     if ui.add(egui::Button::new("Scan Folder")).clicked() {
                         self.image_list.clear();
                         self.image_list = find_images();
+                        println!("found images");
+
+                        for image in &self.image_list {
+                            println!("for images {}", image);
+                            self.retained_images.push(
+                                RetainedImage::from_image_bytes(
+                                    "test",
+                                    fs::read(image)
+                                        .expect("error reading image file")
+                                        .as_bytes(),
+                                )
+                                .unwrap(),
+                            )
+                        }
+
                         println!("{}", &self.keep_original_files);
                     };
                     if ui.add(egui::Button::new("Remove Selected")).clicked() {
