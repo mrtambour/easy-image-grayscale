@@ -1,7 +1,10 @@
 use std::fmt::Formatter;
 
-use iced::widget::{column, container, pick_list, scrollable, vertical_space};
-use iced::{Alignment, Element, Length, Sandbox, Settings};
+use iced::alignment::Horizontal;
+use iced::widget::{column, container, pick_list, row};
+use iced::{Element, Length, Sandbox};
+use iced_native::widget::{button, horizontal_rule};
+use iced_native::Theme;
 
 #[derive(Default)]
 pub struct ImageGrayscale {
@@ -52,11 +55,15 @@ impl Sandbox for ImageGrayscale {
     type Message = Message;
 
     fn new() -> Self {
-        ImageGrayscale::default()
+        ImageGrayscale {
+            image_list: vec![],
+            file_options: vec![],
+            keep_original_files: Some(FileOptions::KeepOriginalFiles),
+        }
     }
 
     fn title(&self) -> String {
-        String::from("Easy Image grayscale")
+        String::from("Easy Image Grayscale")
     }
 
     fn update(&mut self, message: Self::Message) {
@@ -70,19 +77,24 @@ impl Sandbox for ImageGrayscale {
             &FileOptions::ALL[..],
             self.keep_original_files,
             Message::PickListChanged,
-        )
-        .placeholder("choose an option");
+        );
 
-        let content = column![pick_list]
+        let pick_list_con = container(pick_list)
             .width(Length::Fill)
-            .align_items(Alignment::Center)
-            .spacing(10);
+            .height(Length::Shrink)
+            .align_x(Horizontal::Right);
 
-        container(scrollable(content))
+        let scan_folder_con = container(button("Scan Folder"))
             .width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+            .height(Length::Shrink)
+            .align_x(Horizontal::Left);
+
+        let top_row = row![scan_folder_con, pick_list_con].padding(10.0);
+
+        column![top_row, horizontal_rule(5.0)].into()
+    }
+
+    fn theme(&self) -> Theme {
+        Theme::Dark
     }
 }

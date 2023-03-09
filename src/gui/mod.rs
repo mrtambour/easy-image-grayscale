@@ -1,1 +1,1 @@
-pub mod interface;
+pub mod iced_gui;
