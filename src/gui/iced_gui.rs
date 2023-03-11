@@ -23,12 +23,6 @@ pub struct ImageGrayscale {
 pub enum Message {
     ButtonPressed,
     PickListChanged(FileOptions),
-
-    ScrollbarWidthChanged(u16),
-    ScrollbarMarginChanged(u16),
-    ScrollerWidthChanged(u16),
-    ScrollToBeginning,
-    ScrollToEnd,
     Scrolled(scrollable::RelativeOffset),
 }
 
@@ -43,12 +37,6 @@ impl FileOptions {
         FileOptions::KeepOriginalFiles,
         FileOptions::RemoveOriginalFiles,
     ];
-}
-
-impl Default for FileOptions {
-    fn default() -> Self {
-        FileOptions::KeepOriginalFiles
-    }
 }
 
 impl std::fmt::Display for FileOptions {
@@ -105,22 +93,23 @@ impl Sandbox for ImageGrayscale {
             .height(Length::Shrink)
             .align_x(Horizontal::Right);
 
-        let scan_folder_con = container(button("Scan Folder"))
+        let scan_folder_con = container(button("Process Images"))
             .width(Length::Fill)
             .height(Length::Shrink)
             .align_x(Horizontal::Left);
 
-        let top_row = column![
-            row![scan_folder_con, pick_list_con].padding(10.0),
-            horizontal_rule(5.0),
-        ]
-        .width(Length::Fill);
+        let top_row =
+            column![row![scan_folder_con, pick_list_con].padding(10.0),].width(Length::Fill);
 
         let scrollable_area = scrollable(
-            column![horizontal_rule(5.0),]
-                .width(Length::Fill)
-                .align_items(Alignment::Center)
-                .spacing(50),
+            column![
+                horizontal_rule(5.0),
+                horizontal_rule(5.0),
+                horizontal_rule(5.0),
+            ]
+            .width(Length::Fill)
+            .align_items(Alignment::Center)
+            .spacing(50),
         )
         .height(Length::Fill)
         .vertical_scroll(
@@ -132,25 +121,24 @@ impl Sandbox for ImageGrayscale {
         .on_scroll(Message::Scrolled);
 
         let bottom_row = row![
-            container(button("Remove Selected"))
-                .width(Length::Fill)
-                .height(Length::Shrink)
-                .align_x(Horizontal::Left),
-            container(button("Clear List"))
-                .width(Length::Fill)
-                .height(Length::Shrink)
-                .align_x(Horizontal::Center),
-            container(button("Process Images"))
-                .width(Length::Fill)
-                .height(Length::Shrink)
-                .align_x(Horizontal::Right),
+            button("Scan Folder"),
+            button("Remove Selected"),
+            button("Clear List"),
         ]
         .width(Length::Fill)
-        .padding(15.0);
+        .spacing(20.0)
+        .align_items(Alignment::Center)
+        .padding(10.0);
 
-        column![top_row, scrollable_area, bottom_row,]
-            .width(Length::Fill)
-            .into()
+        column![
+            top_row,
+            horizontal_rule(5.0),
+            scrollable_area,
+            horizontal_rule(5.0),
+            bottom_row,
+        ]
+        .width(Length::Fill)
+        .into()
     }
 
     fn theme(&self) -> Theme {
