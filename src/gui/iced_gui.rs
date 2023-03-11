@@ -1,22 +1,35 @@
+use std::any::Any;
 use std::fmt::Formatter;
 
 use iced::alignment::Horizontal;
+use iced::theme::Scrollable;
 use iced::widget::{column, container, pick_list, row};
 use iced::{Element, Length, Sandbox};
-use iced_native::widget::{button, horizontal_rule};
-use iced_native::Theme;
+use iced_native::widget::scrollable::Properties;
+use iced_native::widget::{button, horizontal_rule, scrollable};
+use iced_native::{Alignment, Theme};
 
-#[derive(Default)]
 pub struct ImageGrayscale {
     image_list: Vec<String>,
     file_options: Vec<FileOptions>,
     keep_original_files: Option<FileOptions>,
+    scrollbar_width: u16,
+    scrollbar_margin: u16,
+    scroller_width: u16,
+    current_scroll_offset: scrollable::RelativeOffset,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     ButtonPressed,
     PickListChanged(FileOptions),
+
+    ScrollbarWidthChanged(u16),
+    ScrollbarMarginChanged(u16),
+    ScrollerWidthChanged(u16),
+    ScrollToBeginning,
+    ScrollToEnd,
+    Scrolled(scrollable::RelativeOffset),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -59,6 +72,10 @@ impl Sandbox for ImageGrayscale {
             image_list: vec![],
             file_options: vec![],
             keep_original_files: Some(FileOptions::KeepOriginalFiles),
+            scrollbar_width: 10,
+            scrollbar_margin: 0,
+            scroller_width: 10,
+            current_scroll_offset: scrollable::RelativeOffset::START,
         }
     }
 
@@ -67,8 +84,12 @@ impl Sandbox for ImageGrayscale {
     }
 
     fn update(&mut self, message: Self::Message) {
-        if let Message::PickListChanged(FileOptions) = message {
-            self.keep_original_files = Some(FileOptions);
+        match message {
+            Message::PickListChanged(FileOptions) => {
+                self.keep_original_files = Some(FileOptions);
+            }
+            Message::Scrolled(offset) => self.current_scroll_offset = offset,
+            _ => {}
         }
     }
 
@@ -89,9 +110,47 @@ impl Sandbox for ImageGrayscale {
             .height(Length::Shrink)
             .align_x(Horizontal::Left);
 
-        let top_row = row![scan_folder_con, pick_list_con].padding(10.0);
+        let top_row = column![
+            row![scan_folder_con, pick_list_con].padding(10.0),
+            horizontal_rule(5.0),
+        ]
+        .width(Length::Fill);
 
-        column![top_row, horizontal_rule(5.0)].into()
+        let scrollable_area = scrollable(
+            column![horizontal_rule(5.0),]
+                .width(Length::Fill)
+                .align_items(Alignment::Center)
+                .spacing(50),
+        )
+        .height(Length::Fill)
+        .vertical_scroll(
+            Properties::new()
+                .width(self.scrollbar_width)
+                .margin(self.scrollbar_margin)
+                .scroller_width(self.scroller_width),
+        )
+        .on_scroll(Message::Scrolled);
+
+        let bottom_row = row![
+            container(button("Remove Selected"))
+                .width(Length::Fill)
+                .height(Length::Shrink)
+                .align_x(Horizontal::Left),
+            container(button("Clear List"))
+                .width(Length::Fill)
+                .height(Length::Shrink)
+                .align_x(Horizontal::Center),
+            container(button("Process Images"))
+                .width(Length::Fill)
+                .height(Length::Shrink)
+                .align_x(Horizontal::Right),
+        ]
+        .width(Length::Fill)
+        .padding(15.0);
+
+        column![top_row, scrollable_area, bottom_row,]
+            .width(Length::Fill)
+            .into()
     }
 
     fn theme(&self) -> Theme {
