@@ -1,14 +1,13 @@
-use std::any::Any;
 use std::fmt::Formatter;
 use std::path::PathBuf;
 
 use iced::alignment::Horizontal;
-use iced::theme::Scrollable;
-use iced::widget::{column, container, pick_list, row};
-use iced::{Element, Length, Sandbox};
-use iced_native::widget::scrollable::Properties;
-use iced_native::widget::{button, horizontal_rule, scrollable};
-use iced_native::{Alignment, Theme};
+use iced::widget::{column, container, pick_list, row, scrollable, Scrollable};
+use iced::{Application, Element, Length, Sandbox};
+use iced_native::image::Handle;
+use iced_native::widget::scrollable::{Properties, State};
+use iced_native::widget::{button, horizontal_rule, Column, Image, Row};
+use iced_native::{Alignment, Renderer, Theme, Widget};
 
 use crate::processing::image_handling::{current_directory, find_images};
 
@@ -110,24 +109,25 @@ impl Sandbox for ImageGrayscale {
         let top_row =
             column![row![scan_folder_con, pick_list_con].padding(10.0),].width(Length::Fill);
 
-        let scrollable_area = scrollable(
-            column![
-                horizontal_rule(5.0),
-                horizontal_rule(5.0),
-                horizontal_rule(5.0),
-            ]
+        let mut image_column = Column::new()
+            .height(Length::Shrink)
             .width(Length::Fill)
             .align_items(Alignment::Center)
-            .spacing(50),
-        )
-        .height(Length::Fill)
-        .vertical_scroll(
-            Properties::new()
-                .width(self.scrollbar_width)
-                .margin(self.scrollbar_margin)
-                .scroller_width(self.scroller_width),
-        )
-        .on_scroll(Message::Scrolled);
+            .spacing(50);
+
+        for item in &self.image_list {
+            image_column = image_column.push(Image::<Handle>::new(item));
+        }
+
+        let mut scrollable_collumn = scrollable(image_column)
+            .height(Length::Fill)
+            .vertical_scroll(
+                Properties::new()
+                    .width(self.scrollbar_width)
+                    .margin(self.scrollbar_margin)
+                    .scroller_width(self.scroller_width),
+            )
+            .on_scroll(Message::Scrolled);
 
         let bottom_row = row![
             button("Scan Folder").on_press(Message::PressedScanFolder),
@@ -142,7 +142,7 @@ impl Sandbox for ImageGrayscale {
         column![
             top_row,
             horizontal_rule(5.0),
-            scrollable_area,
+            scrollable_collumn,
             horizontal_rule(5.0),
             bottom_row,
         ]
