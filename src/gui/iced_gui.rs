@@ -25,6 +25,7 @@ pub struct ImageGrayscale {
 #[derive(Debug, Clone)]
 pub enum Message {
     PressedScanFolder,
+    PressedClearList,
     PickListChanged(FileOptions),
     Scrolled(scrollable::RelativeOffset),
 }
@@ -85,6 +86,10 @@ impl Sandbox for ImageGrayscale {
                 self.current_path = current_directory();
                 self.image_list = find_images();
             }
+            Message::PressedClearList => {
+                self.image_list.clear();
+                self.current_path.clear();
+            }
             _ => {}
         }
     }
@@ -132,7 +137,7 @@ impl Sandbox for ImageGrayscale {
         let bottom_row = row![
             button("Scan Folder").on_press(Message::PressedScanFolder),
             button("Remove Selected"),
-            button("Clear List"),
+            button("Clear List").on_press(Message::PressedClearList),
         ]
         .width(Length::Fill)
         .spacing(20.0)
