@@ -1,5 +1,6 @@
 use std::any::Any;
 use std::fmt::Formatter;
+use std::path::PathBuf;
 
 use iced::alignment::Horizontal;
 use iced::theme::Scrollable;
@@ -9,10 +10,13 @@ use iced_native::widget::scrollable::Properties;
 use iced_native::widget::{button, horizontal_rule, scrollable};
 use iced_native::{Alignment, Theme};
 
+use crate::processing::image_handling::{current_directory, find_images};
+
 pub struct ImageGrayscale {
     image_list: Vec<String>,
     file_options: Vec<FileOptions>,
     keep_original_files: Option<FileOptions>,
+    current_path: PathBuf,
     scrollbar_width: u16,
     scrollbar_margin: u16,
     scroller_width: u16,
@@ -21,7 +25,7 @@ pub struct ImageGrayscale {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    ButtonPressed,
+    PressedScanFolder,
     PickListChanged(FileOptions),
     Scrolled(scrollable::RelativeOffset),
 }
@@ -60,6 +64,7 @@ impl Sandbox for ImageGrayscale {
             image_list: vec![],
             file_options: vec![],
             keep_original_files: Some(FileOptions::KeepOriginalFiles),
+            current_path: PathBuf::new(),
             scrollbar_width: 10,
             scrollbar_margin: 0,
             scroller_width: 10,
@@ -77,6 +82,10 @@ impl Sandbox for ImageGrayscale {
                 self.keep_original_files = Some(FileOptions);
             }
             Message::Scrolled(offset) => self.current_scroll_offset = offset,
+            Message::PressedScanFolder => {
+                self.current_path = current_directory();
+                self.image_list = find_images();
+            }
             _ => {}
         }
     }
@@ -121,7 +130,7 @@ impl Sandbox for ImageGrayscale {
         .on_scroll(Message::Scrolled);
 
         let bottom_row = row![
-            button("Scan Folder"),
+            button("Scan Folder").on_press(Message::PressedScanFolder),
             button("Remove Selected"),
             button("Clear List"),
         ]
