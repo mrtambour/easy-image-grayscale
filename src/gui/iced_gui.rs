@@ -2,19 +2,21 @@ use std::fmt::Formatter;
 use std::path::PathBuf;
 
 use iced::alignment::Horizontal;
-use iced::widget::{column, container, pick_list, row, scrollable, Scrollable};
-use iced::{Application, Element, Length, Sandbox};
-use iced_native::image::Handle;
-use iced_native::widget::scrollable::{Properties, State};
-use iced_native::widget::{button, horizontal_rule, Column, Image, Row};
-use iced_native::{Alignment, Renderer, Theme, Widget};
+use iced::widget::{
+    self, column, container, horizontal_rule, image, row, scrollable, text, Column,
+};
+use iced::{Alignment, Application, Color, Command, Element, Length, Sandbox, Settings, Theme};
+use iced_native::widget::scrollable::Properties;
+use iced_native::widget::{button, pick_list};
+use iced_native::Widget;
 
-use crate::processing::image_handling::{current_directory, find_images};
+use crate::processing::image_handling::{current_directory, find_images, images_to_bytes};
 
 pub struct ImageGrayscale {
     image_list: Vec<String>,
     file_options: Vec<FileOptions>,
     keep_original_files: Option<FileOptions>,
+    raw_images: Vec<Vec<u8>>,
     current_path: PathBuf,
     scrollbar_width: u16,
     scrollbar_margin: u16,
@@ -63,6 +65,7 @@ impl Sandbox for ImageGrayscale {
         ImageGrayscale {
             image_list: vec![],
             file_options: vec![],
+            raw_images: vec![],
             keep_original_files: Some(FileOptions::KeepOriginalFiles),
             current_path: PathBuf::new(),
             scrollbar_width: 10,
@@ -85,6 +88,7 @@ impl Sandbox for ImageGrayscale {
             Message::PressedScanFolder => {
                 self.current_path = current_directory();
                 self.image_list = find_images();
+                self.raw_images = images_to_bytes(self.image_list.to_owned());
             }
             Message::PressedClearList => {
                 self.image_list.clear();
@@ -117,14 +121,14 @@ impl Sandbox for ImageGrayscale {
         let mut image_column = Column::new()
             .height(Length::Shrink)
             .width(Length::Fill)
-            .align_items(Alignment::Center)
-            .spacing(50);
+            .align_items(Alignment::Center);
 
-        for item in &self.image_list {
-            image_column = image_column.push(Image::<Handle>::new(item));
+        for image_bytes in &self.raw_images {
+            let my_handle = image::Handle::from_memory(image_bytes.to_owned());
+            image_column = image_column.push(image::viewer(my_handle));
         }
 
-        let mut scrollable_collumn = scrollable(image_column)
+        let mut scrollable_column = scrollable(image_column)
             .height(Length::Fill)
             .vertical_scroll(
                 Properties::new()
@@ -147,7 +151,7 @@ impl Sandbox for ImageGrayscale {
         column![
             top_row,
             horizontal_rule(5.0),
-            scrollable_collumn,
+            scrollable_column,
             horizontal_rule(5.0),
             bottom_row,
         ]
