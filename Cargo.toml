@@ -10,4 +10,14 @@ iced = {version = "0.8.0", features = ["image"]}
 iced_native = "0.9.1"
 image = {version = "0.24.5", features = ["png", "jpeg"]}
 
+[profile.dev]
+opt-level = 2
+incremental = true
+
+[profile.release]
+opt-level = 3
+lto = true
+#strip = true
+codegen-units = 1
+
 
