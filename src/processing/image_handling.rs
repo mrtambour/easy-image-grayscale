@@ -3,6 +3,7 @@ use std::io::{BufReader, Cursor};
 use std::path::PathBuf;
 use std::{env, fs};
 
+use image::imageops::FilterType;
 use image::io::Reader as ImageReader;
 use image::DynamicImage;
 
@@ -14,13 +15,15 @@ pub fn images_to_bytes(files_list: Vec<String>) -> Vec<Vec<u8>> {
     let mut images_as_bytes = Vec::new();
 
     for file in files_list {
-        let target_image = image::open(file).unwrap();
+        let target_image = image::open(file)
+            .unwrap()
+            .resize(600, 600, FilterType::Nearest);
         let mut raw_image: Vec<u8> = Vec::new();
 
         target_image
             .write_to(
                 &mut Cursor::new(&mut raw_image),
-                image::ImageOutputFormat::Jpeg(5),
+                image::ImageOutputFormat::Jpeg(100),
             )
             .unwrap();
 
