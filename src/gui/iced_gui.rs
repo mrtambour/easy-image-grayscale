@@ -6,11 +6,13 @@ use iced::widget::{
     self, column, container, horizontal_rule, image, row, scrollable, text, Column,
 };
 use iced::{Alignment, Application, Color, Command, Element, Length, Sandbox, Settings, Theme};
+use iced_aw::native::Split;
+use iced_aw::split::Axis;
 use iced_native::widget::scrollable::Properties;
 use iced_native::widget::{button, pick_list};
 use iced_native::Widget;
 
-use crate::processing::image_handling::{current_directory, find_images, images_to_bytes};
+use crate::processing::images::{current_directory, find_images, images_to_bytes};
 
 pub struct ImageGrayscale {
     image_list: Vec<String>,
@@ -22,6 +24,7 @@ pub struct ImageGrayscale {
     scrollbar_margin: u16,
     scroller_width: u16,
     current_scroll_offset: scrollable::RelativeOffset,
+    ver_divider_position: Option<u16>,
 }
 
 #[derive(Debug, Clone)]
@@ -30,6 +33,7 @@ pub enum Message {
     PressedClearList,
     PickListChanged(FileOptions),
     Scrolled(scrollable::RelativeOffset),
+    Resized(u16),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,6 +76,7 @@ impl Sandbox for ImageGrayscale {
             scrollbar_margin: 0,
             scroller_width: 10,
             current_scroll_offset: scrollable::RelativeOffset::START,
+            ver_divider_position: Some(450),
         }
     }
 
@@ -94,6 +99,9 @@ impl Sandbox for ImageGrayscale {
                 self.image_list.clear();
                 self.current_path.clear();
             }
+            Message::Resized(position) => {
+                self.ver_divider_position = Some(position);
+            }
             _ => {}
         }
     }
@@ -110,13 +118,27 @@ impl Sandbox for ImageGrayscale {
             .height(Length::Shrink)
             .align_x(Horizontal::Right);
 
-        let scan_folder_con = container(button("Process Images"))
-            .width(Length::Fill)
+        let settings_column = Column::new()
             .height(Length::Shrink)
-            .align_x(Horizontal::Left);
-
-        let top_row =
-            column![row![scan_folder_con, pick_list_con].padding(10.0),].width(Length::Fill);
+            .width(Length::Fill)
+            .align_items(Alignment::Center)
+            .push(
+                row![button("Process Images"), pick_list_con]
+                    .align_items(Alignment::Fill)
+                    .spacing(20.0)
+                    .padding(10.0),
+            )
+            .push(horizontal_rule(5.0))
+            .push(
+                row![
+                    button("Scan Folder").on_press(Message::PressedScanFolder),
+                    button("Clear List").on_press(Message::PressedClearList),
+                    button("Reset Gallery")
+                ]
+                .align_items(Alignment::Fill)
+                .spacing(20.0)
+                .padding(10.0),
+            );
 
         let mut image_column = Column::new()
             .height(Length::Shrink)
@@ -138,24 +160,13 @@ impl Sandbox for ImageGrayscale {
             )
             .on_scroll(Message::Scrolled);
 
-        let bottom_row = row![
-            button("Scan Folder").on_press(Message::PressedScanFolder),
-            button("Remove Selected"),
-            button("Clear List").on_press(Message::PressedClearList),
-        ]
-        .width(Length::Fill)
-        .spacing(20.0)
-        .align_items(Alignment::Center)
-        .padding(10.0);
-
-        column![
-            top_row,
-            horizontal_rule(5.0),
+        Split::new(
             scrollable_column,
-            horizontal_rule(5.0),
-            bottom_row,
-        ]
-        .width(Length::Fill)
+            settings_column,
+            self.ver_divider_position,
+            Axis::Vertical,
+            Message::Resized,
+        )
         .into()
     }
 
