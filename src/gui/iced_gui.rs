@@ -1,15 +1,16 @@
 use std::fmt::Formatter;
 use std::path::PathBuf;
 
-use iced::alignment::Horizontal;
+use iced::alignment::{Horizontal, Vertical};
 use iced::widget::{
-    self, column, container, horizontal_rule, image, row, scrollable, text, Column,
+    self, column, container, horizontal_rule, image, row, scrollable, text, Column, Text,
 };
 use iced::{Alignment, Application, Color, Command, Element, Length, Sandbox, Settings, Theme};
-use iced_aw::native::Split;
+use iced_aw::native::{number_input, NumberInput, Split};
 use iced_aw::split::Axis;
+use iced_aw::Icon::AlignBottom;
 use iced_native::widget::scrollable::Properties;
-use iced_native::widget::{button, pick_list};
+use iced_native::widget::{button, pick_list, vertical_rule, Space};
 use iced_native::Widget;
 
 use crate::processing::images::{current_directory, find_images, images_to_bytes};
@@ -24,7 +25,9 @@ pub struct ImageGrayscale {
     scrollbar_margin: u16,
     scroller_width: u16,
     current_scroll_offset: scrollable::RelativeOffset,
-    ver_divider_position: Option<u16>,
+    hor_divider_position: Option<u16>,
+    input_value: f32,
+    max_input_value: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -34,6 +37,7 @@ pub enum Message {
     PickListChanged(FileOptions),
     Scrolled(scrollable::RelativeOffset),
     Resized(u16),
+    NumInputChanged(f32),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -76,7 +80,9 @@ impl Sandbox for ImageGrayscale {
             scrollbar_margin: 0,
             scroller_width: 10,
             current_scroll_offset: scrollable::RelativeOffset::START,
-            ver_divider_position: Some(450),
+            hor_divider_position: Some(400),
+            input_value: 50.0,
+            max_input_value: 100.0,
         }
     }
 
@@ -98,10 +104,12 @@ impl Sandbox for ImageGrayscale {
             Message::PressedClearList => {
                 self.image_list.clear();
                 self.current_path.clear();
+                self.raw_images.clear();
             }
             Message::Resized(position) => {
-                self.ver_divider_position = Some(position);
+                self.hor_divider_position = Some(position);
             }
+            Message::NumInputChanged(quality) => self.input_value = quality,
             _ => {}
         }
     }
@@ -113,31 +121,45 @@ impl Sandbox for ImageGrayscale {
             Message::PickListChanged,
         );
 
-        let pick_list_con = container(pick_list)
-            .width(Length::Fill)
-            .height(Length::Shrink)
-            .align_x(Horizontal::Right);
-
         let settings_column = Column::new()
-            .height(Length::Shrink)
+            .height(Length::Fill)
             .width(Length::Fill)
             .align_items(Alignment::Center)
-            .push(
-                row![button("Process Images"), pick_list_con]
-                    .align_items(Alignment::Fill)
-                    .spacing(20.0)
-                    .padding(10.0),
-            )
+            .push(horizontal_rule(5.0))
+            .push(row![pick_list.width(Length::Fill)].padding(5.0))
             .push(horizontal_rule(5.0))
             .push(
                 row![
                     button("Scan Folder").on_press(Message::PressedScanFolder),
                     button("Clear List").on_press(Message::PressedClearList),
-                    button("Reset Gallery")
                 ]
-                .align_items(Alignment::Fill)
+                .align_items(Alignment::Center)
                 .spacing(20.0)
                 .padding(10.0),
+            )
+            .push(horizontal_rule(5.0))
+            .push(
+                container(
+                    row![
+                        text("Desired Quality:"),
+                        Space::with_width(5.0),
+                        NumberInput::new(
+                            self.input_value,
+                            self.max_input_value,
+                            Message::NumInputChanged,
+                        )
+                        .step(1.0)
+                    ]
+                    .align_items(Alignment::Center),
+                )
+                .align_y(Vertical::Center)
+                .height(Length::Fill),
+            )
+            .push(
+                container(button("Process Images").width(Length::Fill))
+                    .align_y(Vertical::Bottom)
+                    .height(Length::Fill)
+                    .padding(10.0),
             );
 
         let mut image_column = Column::new()
@@ -163,7 +185,7 @@ impl Sandbox for ImageGrayscale {
         Split::new(
             scrollable_column,
             settings_column,
-            self.ver_divider_position,
+            self.hor_divider_position,
             Axis::Vertical,
             Message::Resized,
         )

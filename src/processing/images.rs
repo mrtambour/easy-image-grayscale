@@ -17,7 +17,8 @@ pub fn images_to_bytes(files_list: Vec<String>) -> Vec<Vec<u8>> {
     for file in files_list {
         let target_image = image::open(file)
             .unwrap()
-            .resize(700, 700, FilterType::Nearest);
+            .resize(700, 700, FilterType::Nearest)
+            .grayscale();
         let mut raw_image: Vec<u8> = Vec::new();
 
         target_image
