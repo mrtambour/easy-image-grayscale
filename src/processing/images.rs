@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufReader, Cursor};
+use std::io::Cursor;
 use std::path::PathBuf;
 use std::{env, fs};
 
@@ -46,7 +46,12 @@ pub fn find_images() -> Vec<String> {
             .into_string()
             .expect("error getting file name");
 
-        if file_name.ends_with(".jpg") | file_name.ends_with("jpeg") | file_name.ends_with(".png") {
+        if file_name.contains("_gryscl") {
+            continue;
+        } else if file_name.ends_with(".jpg")
+            | file_name.ends_with("jpeg")
+            | file_name.ends_with(".png")
+        {
             println!("found image: {}", file_name);
             images.push(file_name);
         }
@@ -66,8 +71,9 @@ pub fn process_images(archive_images: Vec<String>) {
             continue;
         }
         let grayscale_image = image::open(archive_image)
-            .expect("failed to convert image to grayscale")
+            .expect("failed to open image for processing")
             .grayscale();
+
         println!("new image name {final_archive_name}");
         grayscale_image
             .save(final_archive_name)

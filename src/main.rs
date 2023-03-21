@@ -1,4 +1,4 @@
-use crate::gui::iced_gui::ImageGrayscale;
+use crate::gui::interface::ImageGrayscale;
 
 use iced::{window, Application, Settings};
 
@@ -9,8 +9,8 @@ fn main() {
     println!("Easy Image Grayscale");
     let settings = Settings {
         window: window::Settings {
-            size: (700, 500),
-            resizable: false,
+            size: (800, 500),
+            resizable: true,
             decorations: true,
 
             ..Default::default()
