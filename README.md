@@ -10,6 +10,8 @@ Requirements
 ------------
 - Windows 7 64 Bit & Up
 
+![ScreenShot](https://github.com/mrtambour/easy-image-grayscale/blob/development/screenshot.jpg)
+
 Other Info
 ------------
 - If you need to quickly convert zip to cbz   
