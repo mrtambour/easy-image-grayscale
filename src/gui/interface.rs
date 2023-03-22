@@ -94,6 +94,9 @@ impl Sandbox for ImageGrayscale {
             }
             Message::Scrolled(offset) => self.current_scroll_offset = offset,
             Message::PressedScanFolder => {
+                self.image_list.clear();
+                self.current_path.clear();
+                self.raw_images.clear();
                 self.current_path = current_directory();
                 self.image_list = find_images();
                 self.raw_images = images_to_bytes(self.image_list.to_owned());
