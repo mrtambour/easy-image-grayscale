@@ -1,6 +1,8 @@
-use crate::gui::interface::ImageGrayscale;
+#![windows_subsystem = "windows"]
 
 use iced::{window, Application, Settings};
+
+use crate::gui::interface::ImageGrayscale;
 
 mod gui;
 mod processing;

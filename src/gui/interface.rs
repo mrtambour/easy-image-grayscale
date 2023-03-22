@@ -89,8 +89,8 @@ impl Sandbox for ImageGrayscale {
 
     fn update(&mut self, message: Self::Message) {
         match message {
-            Message::PickListChanged(FileOptions) => {
-                self.keep_original_files = Some(FileOptions);
+            Message::PickListChanged(file_options) => {
+                self.keep_original_files = Some(file_options);
             }
             Message::Scrolled(offset) => self.current_scroll_offset = offset,
             Message::PressedScanFolder => {
@@ -115,7 +115,6 @@ impl Sandbox for ImageGrayscale {
                 }
             }
             Message::NumInputChanged(quality) => self.input_value = quality,
-            _ => {}
         }
     }
 

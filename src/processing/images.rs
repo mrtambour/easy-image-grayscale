@@ -1,11 +1,8 @@
-use std::fs::File;
 use std::io::Cursor;
 use std::path::PathBuf;
 use std::{env, fs};
 
 use image::imageops::FilterType;
-use image::io::Reader as ImageReader;
-use image::DynamicImage;
 
 pub fn current_directory() -> PathBuf {
     env::current_dir().expect("error getting current directory")
